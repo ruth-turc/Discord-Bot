@@ -65,4 +65,4 @@ async def echo(interaction: discord.Interaction, printer: str):
 
 
 
-client.run('MTQ2NzI0MDgwODIyNTgzMzI3Mg.GtDtdT.sMimh0032pOh0xLztsC_Gf7eRd28gvGeRp-94s')
+client.run('')
