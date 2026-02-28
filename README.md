@@ -3,6 +3,7 @@ Experimenting with python to create a star wars themed discord bot. It is curren
 
 ### Functionalities (as of right now)
 * Responds to messages
+* Basic slash commands
 
 ### What I learned
 * How to use the discord.py API
