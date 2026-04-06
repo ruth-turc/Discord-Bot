@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
+import requests
 from config import TOKEN, WEATHER_KEY
 
 class Client(commands.Bot):
@@ -67,28 +68,30 @@ async def echo(interaction: discord.Interaction, printer: str):
 
 @client.tree.command(name="weather", description="Gives you current weather for a location", guild=GUILD_ID)
 async def weather(interaction: discord.Interaction, city: str):
-    url = "https://api.weatherapi.com/v1/current.json"
-    params = {
-        "key": WEATHER_KEY,
-        "q": city
-    }
+    url = f"http://weatherapi.com/{WEATHER_KEY}&q={city}&aqi=no"
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, params.params) as res:
-            data = await res.json()
+    
+    try:
+        response = requests.get(url).json()
+        
+        if "error" in response:
+            await interaction.response.send_message(f"Error: {response['error']['message']}")
 
-            location = data["location"]["name"]
-            temp_c = data["current"]["temp_c"]
-            temp_f = data["current"]["temp_f"]
-            humidity = data["current"]["humidity"]
-            wind_kph = data["current"]["wind_kph"]
-            wind_mph = data["current"]["wind_mph"]
-            condition = data["current"]["condition"]["text"]
-            image_url = "http:" + data["current"]["condition"]["icon"]
+        #extracting data from WeatherAPI response
+        location = response["location"]["name"]
+        #temp_c = data["current"]["temp_c"]
+        temp_f = response["current"]["temp_f"]
+        condition = response["current"]["condition"]["text"]
+        icon_url = "http:" + response["current"]["condition"]["icon"]
 
-            embed = nextcord.Embed(title=f"Weather for {location}", description=f"The condition in {location} is {condition}")
-            embed.add_field(name="Temperature", value=f"C: {temp_c} | F: {temp_f}")
-
-            await ctx.send(embed=embed)
-
+        #creating an Embed for a clean look
+        embed = discord.Embed(title=f'Weather in {location}', color=discord.Color.blue())
+        embed.add_field(name="Temperature",value=f"{temp_f}°F", inline=True)
+        embed.add_field(name="Condition",value=condition,inline=True)
+        embed.set_tumbnail(url=icon_url)
+        
+        await interaction.response.send_message(embed=embed)
+    except Exception as e:
+            await interaction.response.send_message(f"An error occured: {str(e)}")
+    
 client.run(TOKEN)
