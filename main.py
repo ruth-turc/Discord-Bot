@@ -68,11 +68,18 @@ async def echo(interaction: discord.Interaction, printer: str):
 
 @client.tree.command(name="weather", description="Gives you current weather for a location", guild=GUILD_ID)
 async def weather(interaction: discord.Interaction, city: str):
-    url = f"http://weatherapi.com/{WEATHER_KEY}&q={city}&aqi=no"
+    url = f"http://api.weatherapi.com/v1/current.json?key={WEATHER_KEY}&q={city}&aqi=no"
 
     
     try:
-        response = requests.get(url).json()
+        response = requests.get(url)
+
+        #Following lines are for Debug purposes
+        #print("URL:", response.url)
+        #print("Status:", response.status_code)
+        #print("Response:", response.text)
+        
+        response = response.json()
         
         if "error" in response:
             await interaction.response.send_message(f"Error: {response['error']['message']}")
@@ -85,10 +92,10 @@ async def weather(interaction: discord.Interaction, city: str):
         icon_url = "http:" + response["current"]["condition"]["icon"]
 
         #creating an Embed for a clean look
-        embed = discord.Embed(title=f'Weather in {location}', color=discord.Color.blue())
+        embed = discord.Embed(title=f'Weather in {location}, Roger Roger!', color=discord.Color.blue())
         embed.add_field(name="Temperature",value=f"{temp_f}°F", inline=True)
         embed.add_field(name="Condition",value=condition,inline=True)
-        embed.set_tumbnail(url=icon_url)
+        embed.set_thumbnail(url=icon_url)
         
         await interaction.response.send_message(embed=embed)
     except Exception as e:
